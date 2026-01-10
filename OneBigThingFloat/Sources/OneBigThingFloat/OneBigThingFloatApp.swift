@@ -103,9 +103,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         config.createsNewApplicationInstance = true
         NSWorkspace.shared.openApplication(at: appURL, configuration: config) { _, _ in }
 
-        // Exit cleanly using exit() instead of NSApp.terminate to avoid autorelease pool issues
+        // Use _exit() for immediate termination without any cleanup (avoids crash)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            exit(0)
+            _exit(0)
         }
     }
 
