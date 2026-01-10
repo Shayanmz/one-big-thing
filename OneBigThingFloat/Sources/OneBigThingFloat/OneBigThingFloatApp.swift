@@ -99,14 +99,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Relaunch the app without --prompt to show floating window
         log("Relaunching app")
         let appURL = Bundle.main.bundleURL
-        let config = NSWorkspace.OpenConfiguration()
-        config.createsNewApplicationInstance = true
-        NSWorkspace.shared.openApplication(at: appURL, configuration: config) { _, _ in }
 
-        // Use _exit() for immediate termination without any cleanup (avoids crash)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            _exit(0)
-        }
+        // Use Process to launch, then exit immediately
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/open")
+        process.arguments = ["-n", appURL.path]
+        try? process.run()
+
+        // Exit immediately
+        _exit(0)
     }
 
     func log(_ message: String) {
