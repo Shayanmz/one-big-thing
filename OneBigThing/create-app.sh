@@ -4,7 +4,7 @@
 swift build -c release
 
 # Create app bundle structure
-APP_NAME="OneBigThingFloat"
+APP_NAME="OneBigThing"
 APP_DIR="$APP_NAME.app"
 CONTENTS_DIR="$APP_DIR/Contents"
 MACOS_DIR="$CONTENTS_DIR/MacOS"
@@ -17,6 +17,9 @@ mkdir -p "$RESOURCES_DIR"
 # Copy the executable
 cp ".build/release/$APP_NAME" "$MACOS_DIR/"
 
+# Copy the app icon
+cp "AppIcon.icns" "$RESOURCES_DIR/"
+
 # Create Info.plist
 cat > "$CONTENTS_DIR/Info.plist" << 'EOF'
 <?xml version="1.0" encoding="UTF-8"?>
@@ -26,11 +29,11 @@ cat > "$CONTENTS_DIR/Info.plist" << 'EOF'
     <key>CFBundleDevelopmentRegion</key>
     <string>en</string>
     <key>CFBundleExecutable</key>
-    <string>OneBigThingFloat</string>
+    <string>OneBigThing</string>
     <key>CFBundleIconFile</key>
     <string>AppIcon</string>
     <key>CFBundleIdentifier</key>
-    <string>com.onebighing.float</string>
+    <string>com.onebigthing</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleName</key>

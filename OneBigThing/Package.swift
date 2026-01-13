@@ -2,11 +2,11 @@
 import PackageDescription
 
 let package = Package(
-    name: "OneBigThingFloat",
+    name: "OneBigThing",
     platforms: [.macOS(.v13)],
     targets: [
         .executableTarget(
-            name: "OneBigThingFloat"
+            name: "OneBigThing"
         )
     ]
 )

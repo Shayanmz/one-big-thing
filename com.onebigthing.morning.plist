@@ -3,11 +3,11 @@
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>com.onebighing.morning</string>
+    <string>com.onebigthing.morning</string>
 
     <key>ProgramArguments</key>
     <array>
-        <string>/Applications/OneBigThingFloat.app/Contents/MacOS/OneBigThingFloat</string>
+        <string>/Applications/OneBigThing.app/Contents/MacOS/OneBigThing</string>
         <string>--prompt</string>
     </array>
 
@@ -30,8 +30,8 @@
 
     <!-- Standard output/error logging (optional) -->
     <key>StandardOutPath</key>
-    <string>/tmp/onebighing.log</string>
+    <string>/tmp/onebigthing.log</string>
     <key>StandardErrorPath</key>
-    <string>/tmp/onebighing.error.log</string>
+    <string>/tmp/onebigthing.error.log</string>
 </dict>
 </plist>

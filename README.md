@@ -13,17 +13,16 @@ It's meant to be obnoxious. That's the point.
 ## Install
 
 ```bash
-cd OneBigThingFloat
-swift build -c release
-mkdir -p /Applications/OneBigThingFloat.app/Contents/MacOS
-cp .build/release/OneBigThingFloat /Applications/OneBigThingFloat.app/Contents/MacOS/
+cd OneBigThing
+./create-app.sh
+mv OneBigThing.app /Applications/
 ```
 
 ## Setup Daily Prompt
 
 ```bash
-cp com.onebighing.morning.plist ~/Library/LaunchAgents/
-launchctl load ~/Library/LaunchAgents/com.onebighing.morning.plist
+cp com.onebigthing.morning.plist ~/Library/LaunchAgents/
+launchctl load ~/Library/LaunchAgents/com.onebigthing.morning.plist
 ```
 
-This runs the prompt at 9am daily and on login.
+This runs the prompt at 8am daily and on login.

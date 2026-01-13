@@ -3,7 +3,7 @@ import AppKit
 import Combine
 
 @main
-struct OneBigThingFloatApp: App {
+struct OneBigThingApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     var body: some Scene {
@@ -96,6 +96,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         self.promptWindow?.close()
         self.promptWindow = nil
 
+        // Kill any existing floating window instances before launching new one
+        killExistingInstances()
+
         // Relaunch the app without --prompt to show floating window
         log("Relaunching app")
         let appURL = Bundle.main.bundleURL
@@ -108,6 +111,45 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         // Exit immediately
         _exit(0)
+    }
+
+    func killExistingInstances() {
+        let currentPID = ProcessInfo.processInfo.processIdentifier
+        let appName = "OneBigThing"
+
+        log("Killing existing instances (current PID: \(currentPID))")
+
+        // Use pkill to kill all instances except ourselves
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/pkill")
+        process.arguments = ["-f", appName]
+
+        // We need to ignore our own process, so use a different approach
+        // Use pgrep to find PIDs, then kill them individually
+        let pgrepProcess = Process()
+        pgrepProcess.executableURL = URL(fileURLWithPath: "/usr/bin/pgrep")
+        pgrepProcess.arguments = ["-f", appName]
+
+        let pipe = Pipe()
+        pgrepProcess.standardOutput = pipe
+
+        do {
+            try pgrepProcess.run()
+            pgrepProcess.waitUntilExit()
+
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            if let output = String(data: data, encoding: .utf8) {
+                let pids = output.split(separator: "\n").compactMap { Int32($0) }
+                for pid in pids {
+                    if pid != currentPID {
+                        log("Killing PID: \(pid)")
+                        kill(pid, SIGTERM)
+                    }
+                }
+            }
+        } catch {
+            log("Error finding existing instances: \(error)")
+        }
     }
 
     func log(_ message: String) {
@@ -211,10 +253,68 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 }
 
-// Custom window class for floating reminder (draggable)
-class FloatingWindow: NSWindow {
+// Custom window class for floating reminder (draggable with screen edge constraints)
+class FloatingWindow: NSWindow, NSWindowDelegate {
+    // Padding from screen edges where the window cannot be dragged past
+    private let edgePadding: CGFloat = 20
+    // The ring padding around the visible content
+    private let ringPadding: CGFloat = 120
+
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { true }
+
+    override init(contentRect: NSRect, styleMask style: NSWindow.StyleMask, backing backingStoreType: NSWindow.BackingStoreType, defer flag: Bool) {
+        super.init(contentRect: contentRect, styleMask: style, backing: backingStoreType, defer: flag)
+        self.delegate = self
+    }
+
+    func windowDidMove(_ notification: Notification) {
+        constrainToScreen()
+    }
+
+    private func constrainToScreen() {
+        guard let screen = self.screen ?? NSScreen.main else { return }
+
+        let screenFrame = screen.visibleFrame
+        var windowFrame = self.frame
+
+        // The visible content area is inset by ringPadding from the window edges
+        // So we need to constrain the visible area, not the full window
+        let visibleContentMinX = windowFrame.minX + ringPadding
+        let visibleContentMaxX = windowFrame.maxX - ringPadding
+        let visibleContentMinY = windowFrame.minY + ringPadding
+        let visibleContentMaxY = windowFrame.maxY - ringPadding
+
+        var needsAdjustment = false
+
+        // Check left edge - visible content should not go past left edge + padding
+        if visibleContentMinX < screenFrame.minX + edgePadding {
+            windowFrame.origin.x = screenFrame.minX + edgePadding - ringPadding
+            needsAdjustment = true
+        }
+
+        // Check right edge - visible content should not go past right edge - padding
+        if visibleContentMaxX > screenFrame.maxX - edgePadding {
+            windowFrame.origin.x = screenFrame.maxX - edgePadding - (windowFrame.width - ringPadding)
+            needsAdjustment = true
+        }
+
+        // Check bottom edge
+        if visibleContentMinY < screenFrame.minY + edgePadding {
+            windowFrame.origin.y = screenFrame.minY + edgePadding - ringPadding
+            needsAdjustment = true
+        }
+
+        // Check top edge
+        if visibleContentMaxY > screenFrame.maxY - edgePadding {
+            windowFrame.origin.y = screenFrame.maxY - edgePadding - (windowFrame.height - ringPadding)
+            needsAdjustment = true
+        }
+
+        if needsAdjustment {
+            self.setFrame(windowFrame, display: true)
+        }
+    }
 }
 
 // Custom window class for blocking prompt (accepts keyboard input)
